@@ -50,6 +50,8 @@
       model, json, words, rerank: JSON.parse(new TextDecoder().decode(rr)),
     });
     log(`Start-up        ${ms(performance.now() - t)}`);
+    log(`WebAssembly SIMD ${tr.simd ? "yes" : "no (plain JavaScript, much slower)"}`);
+    tr.cacheSize = 0;   // repeated words would otherwise be cache lookups, not real work
 
     // 3. the very first word, before the JavaScript engine has optimised anything
     t = performance.now();
