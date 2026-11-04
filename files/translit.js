@@ -521,7 +521,7 @@ export class Transliterator {
     return res;
   }
 
-  rank(src) {
+  rank(src, noFix = false) {
     const { lam = 0, off = 0, beam = 4 } = this.rr, nb = this.nbest(src, beam);
     for (const c of nb) {
       const lp = this.list ? this.list.logp(c.text) : undefined;
@@ -530,13 +530,37 @@ export class Transliterator {
     }
     let best = null;
     for (const c of nb) if (!best || c.final > best.final) best = c;
-    return { best: best ? best.text : "", nbest: nb, candidates: [...nb].sort((a, b) => b.final - a.final) };
+    // A Hindi word almost never ends in a bare virama, so a best spelling that does was cut short (acha -> अच्).
+    // Then take the best candidate without one, from this beam plus the in-list candidates of a few spelling variants
+    // (acha -> accha, a final a added or lengthened). Fires on about 0.1% of words (Aksharantar Hindi, 4 Nov 2026).
+    let candidates = [...nb].sort((a, b) => b.final - a.final);
+    if (best && best.text.endsWith(VIRAMA) && !noFix) {
+      const pool = nb.filter((c) => !c.text.endsWith(VIRAMA));
+      for (const v of spellingVariants(src)) for (const c of this.rank(v, true).nbest) if (c.inList && !c.text.endsWith(VIRAMA)) pool.push(c);
+      for (const c of pool) if (best.text.endsWith(VIRAMA) || c.final > best.final) best = c;
+      // the chosen spelling leads the candidates, as it always does
+      candidates = [best, ...candidates.filter((c) => c.text !== best.text)];
+    }
+    return { best: best ? best.text : "", nbest: nb, candidates };
   }
 
   // a line of text: runs of Latin letters are transliterated, everything else is kept
   text(s) {
     return s.replace(/[A-Za-z]+/g, (w) => this.word(w).best || w);
   }
+}
+
+const VIRAMA = "\u094d";
+
+// romanised spellings to try when the model cuts a word short: doubled middle consonant (acha -> accha), a final "a"
+// after a consonant, a final "a" lengthened
+function spellingVariants(w) {
+  const out = new Set(), m = w.match(/^(.*[aeiou])([bcdfgjklmnpqrstvwxyz])(h?)([aeiou]+)$/);
+  if (m) out.add(m[1] + m[2] + m[2] + m[3] + m[4]);
+  if (/[bcdfghjklmnpqrstvwxyz]$/.test(w)) out.add(w + "a");
+  if (/[^a]a$/.test(w)) out.add(w + "a");
+  out.delete(w);
+  return [...out];
 }
 
 function norm(s) {

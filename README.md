@@ -1,11 +1,11 @@
 ![Lekhani · Udgam Labs](./assets/banner.png)
 
-**UDGAM LABS** · Transliterator · 0.87 MB, Hindi, runs in the browser
+**UDGAM LABS** · Transliterator · 0.88 MB, Hindi, runs in the browser
 
 # Lekhani
 
 **Lekhani turns Hindi typed in Latin letters into Devanagari, on your own device.** You type `kaise ho`, it writes
-कैसे हो. The whole thing is a 0.87 MB download: a 0.81M-parameter model at 4 bits, a list of 200,000 common Hindi words
+कैसे हो. The whole thing is a 0.88 MB download: a 0.81M-parameter model at 4 bits, a list of 200,000 common Hindi words
 and a 10 KB JavaScript runner with no dependencies. It runs in a web page or in Node, so nothing you type is sent
 anywhere.
 
@@ -21,7 +21,7 @@ a 4.2-million-word list that takes 358 MB of memory, about 400 times the size of
 |---|---|
 | Developer | Udgam Labs |
 | Model | Encoder-decoder transformer, 2 + 2 layers, width 128, 811,904 parameters, 4-bit weights, trained from random weights |
-| Files | `files/`: five files, 876,261 bytes in all (gzip) |
+| Files | `files/`: five files, 876,853 bytes in all (gzip) |
 | Input / output | Hindi in Latin letters → Devanagari, one word at a time; everything that is not Latin letters is kept as it is |
 | Runtime | JavaScript (ES module) with WebAssembly SIMD where the browser has it, plain JavaScript otherwise: any modern browser, or Node 18+. No server, no WebGPU, no dependencies |
 | Licence | Apache-2.0 (model and runner); CC0 (word list) |
@@ -81,9 +81,9 @@ console.log(tr.word("main").candidates.slice(0, 3).map((c) => c.text));   // [ '
 |---|---|---|
 | `files/model.q4.gz` | the model, 811,904 parameters at 4 bits | 432,512 bytes |
 | `files/words.bin.gz` | 200,000 common Hindi words in 8 frequency bands | 432,193 bytes |
-| `files/translit.js` | the runner (29.5 KB as written) | 10,308 bytes |
+| `files/translit.js` | the runner (30.9 KB as written) | 10,900 bytes |
 | `files/model.json.gz`, `files/rerank.json` | settings and alphabet | 1,248 bytes |
-| **Total download** | | **876,261 bytes (0.88 MB)** |
+| **Total download** | | **876,853 bytes (0.88 MB)** |
 
 Check the files with `cd files && shasum -a 256 -c ../SHA256SUMS`. The same files are on
 [Hugging Face](https://huggingface.co/udgamlabs/Lekhani).
@@ -107,7 +107,7 @@ paired for gaps. Measured by us on 28 October 2026.
 
 | System | What you download or hold | Aksharantar Hindi | Hinglish chat set (of 122) |
 |---|---|---|---|
-| **Lekhani** | **0.87 MB** | **65.9%** (64.9 to 66.8) | **112** |
+| **Lekhani** | **0.88 MB** | **65.9%** (64.9 to 66.8) | **113** |
 | IndicXlit, model on its own (beam 4, its default) | 11.5M parameters (46 MB fp32; a third-party 8-bit browser export is 14.4 MB) | 58.9% | 102 |
 | IndicXlit, full Python package (model + word list) | the model + a 4.2M-word list, 358 MB in memory | 68.7% | 112 |
 
@@ -115,7 +115,7 @@ paired for gaps. Measured by us on 28 October 2026.
 - **Against IndicXlit's full package: -2.8 points** (-3.6 to -2.1). The package is more accurate if you can afford its
   word list.
 - **Hinglish chat set:** 122 words people type in chat (everyday words, English words used in Hindi, brands, names),
-  written by us and checked word by word by a native Hindi speaker. Lekhani gets 112, level with IndicXlit's package.
+  written by us and checked word by word by a native Hindi speaker. Lekhani gets 113, one more than IndicXlit's package (112).
   The set is too small to call a few words' difference.
 - **Other open transliterators** we ran on the same test, word by word, scored far lower: IB-Emper
   hindi-translit-v3 (15M parameters, its model on its own) 48.6%, UnimeType Transliteration 4B 24.6% (v1.0) and
@@ -129,9 +129,8 @@ paired for gaps. Measured by us on 28 October 2026.
 ## Where it falls short
 
 - **About one word in three on this test is wrong at top-1.** The test is hard: many rare words and names. On
-  everyday chat words it does much better (41 of 44 in our chat set), but it still makes mistakes there.
-- **Some common words come out wrong:** `acha` → अच् (should be अच्छा; `accha` works), `kal` → काल (कल is its second
-  choice), `delhi` → देल्ही (should be दिल्ली).
+  everyday chat words it does much better (42 of 44 in our chat set), but it still makes mistakes there.
+- **Some common words come out wrong:** `kal` → काल (कल is its second choice), `delhi` → देल्ही (should be दिल्ली).
 - **No sentence context.** It writes one word at a time, so `main` ("I") and `mein` ("in") both become में:
   `main ghar ja raha hoon` → में घर जा रहा हूं (should be मैं).
 - **IndicXlit's full package is 2.8 points more accurate** on the main test.
@@ -154,6 +153,20 @@ For typing Hindi in Latin letters on websites, apps and tools: search boxes, for
 suggestions. It works one word at a time and does not translate. Show users the runners-up so they can fix a wrong
 word, and keep their own spelling if they do. It is not meant for names on legal or official documents without a
 human check.
+
+## Changes
+
+- **1.2.0 (4 Nov 2026):** common words cut short are fixed. When the best spelling ends in a bare virama (्), which a
+  Hindi word almost never does, the runner now takes the best candidate without one, also trying a few spelling
+  variants of the input (for example `acha` → `accha`) and keeping only listed words. `acha` and `achha` now give
+  अच्छा. It changes about 0.1% of words: the Aksharantar Hindi test is unchanged at 65.9% (one word fixed, one broken),
+  and the Hinglish chat set rises from 112 to 113. Same model and word list; speed is unchanged.
+- **1.1.0 (2 Nov 2026):** the runner is about 10 times faster (batched beam search, WebAssembly SIMD kernels with a
+  plain-JavaScript fallback, a GELU table, leaner beam search and a 2,000-word cache), contributed by
+  [Manit Roy](https://github.com/manit2004) in [#1](https://github.com/udgamlabs/lekhani/pull/1). Same model and word list: the
+  same best word and the same 8 candidates, in the same order, on all 9,991 Aksharantar Hindi test words (checked again on a
+  Mac mini: 18.7 to 1.9 ms a word in Node). The runner grew from 5 KB to 10 KB, so the download is 0.88 MB (was 0.87 MB).
+- **1.0.0 (30 Oct 2026):** first release.
 
 ## Licence
 
