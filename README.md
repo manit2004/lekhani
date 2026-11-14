@@ -16,7 +16,8 @@ re-ranks with word lists of millions of words held in memory, is level with Lekh
 
 *Lekhani* (लेखनी) is Hindi for "pen".
 
-[Try it in your browser](https://huggingface.co/spaces/udgamlabs/Lekhani) · [Model card](https://huggingface.co/udgamlabs/Lekhani) · [udgamlabs.com](https://udgamlabs.com/models/lekhani)
+[Try it in your browser](https://huggingface.co/spaces/udgamlabs/Lekhani) · [Model card](https://huggingface.co/udgamlabs/Lekhani) · [udgamlabs.com](https://udgamlabs.com/models/lekhani) ·
+[Technical report](https://udgamlabs.com/research/lekhani) ([PDF](docs/lekhani-technical-report.pdf))
 
 | | |
 |---|---|
@@ -124,6 +125,10 @@ runner on 13 November: the same first guess on every test word.
   settings files and the runner (6,625 bytes). Each is under 1,000,000. Hindi is 0.87 MB, the others 0.71 to 1.0 MB.
 - In Hindi, our own 122-word chat set (everyday chat words, English words used in Hindi, brands and names, checked
   word by word by a native speaker): Lekhani 113, IndicXlit's package 112, IndicXlit's model 102.
+- **Check a score yourself:** `node tools/score.mjs files/tamil tam_test.json` (Node 18 or newer, no dependencies)
+  scores a language's files on its Aksharantar test file (from `ai4bharat/Aksharantar` at revision `e418c1f`, e.g.
+  `tam.zip` → `tam_test.json`), counting exactly as the table does. Hindi's files are in `files/` itself. The
+  [technical report](https://udgamlabs.com/research/lekhani) gives every setting.
 
 ## Where it falls short
 
@@ -169,6 +174,9 @@ a human check.
 
 ## Changes
 
+- **Technical report and scorer (14 Nov 2026):** the technical report (`docs/lekhani-technical-report.pdf`, also at
+  [udgamlabs.com/research/lekhani](https://udgamlabs.com/research/lekhani)) and `tools/score.mjs`, which reproduces
+  the Aksharantar scores from the released files. No model or runner file changed.
 - **Eight more languages (14 Nov 2026):** Marathi, Bengali, Urdu, Malayalam, Gujarati, Punjabi, Odia and Assamese, each in
   its own folder, so twelve in all. The runner (1.3.0) and the Hindi, Tamil, Telugu and Kannada files are unchanged.
   The 1.2.0 fix for words cut short (a bare virama at the end) applies to Devanagari, so to Hindi and Marathi; in
