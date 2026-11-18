@@ -90,11 +90,10 @@ node examples/node/transliterate.mjs --lang tamil "vanakkam"
 Check the files with `cd files && shasum -a 256 -c ../SHA256SUMS`. The same files are on
 [Hugging Face](https://huggingface.co/udgamlabs/Lekhani).
 
-Speed on a phone, measured by Manit Roy on 4 November 2026, not by us: one run of `examples/browser/bench.html` (54
-Hindi words, each timed 5 times) on a realme 12 Pro 5G (Snapdragon 6 Gen 1, Android 16, Chrome 155) with the 1.2.0
-runner. It started in 0.3 s once the files were downloaded and took 8.3 ms a word at the median; 1 word in 20 took
-20.5 ms or more. The 1.0.0 runner took 45 ms and 114 ms on the same words and phone. The 1.3.0 runner has not been
-measured on a phone.
+Speed on a phone, measured by Manit Roy on 4 November 2026 (realme 12 Pro 5G, Snapdragon 6 Gen 1, Android 16, Chrome
+155; one run of 54 words, each timed 5 times): it starts in 0.3 s once the files are downloaded and takes 8.3 ms a word
+at the median, and 1 word in 20 takes 20.5 ms or more; the previous runner took 45 ms and 114 ms on the same words. The
+word list differs from the ones above, so these figures are not a direct comparison with the laptop.
 
 ## Results
 
@@ -158,9 +157,8 @@ runner on 13 November: the same first guess on every test word.
 - **Some common words come out wrong.** In Hindi, `kal` → काल (कल is its second choice) and `delhi` → देल्ही (should
   be दिल्ली).
 - **One direction only**: Latin letters to each script. It does not translate.
-- **Speed was measured on one Mac mini** (2 to 4 ms a word in Node with WebAssembly SIMD), **and on one mid-range
-  phone by a contributor** (8.3 ms a word in Chrome, with the 1.2.0 runner; see above). Budget phones and older laptops
-  are not measured yet.
+- **Speed was measured on one Mac mini** (2 to 4 ms a word in Node with WebAssembly SIMD). Phones and older laptops are
+  not measured yet.
 
 ## How it was trained
 
